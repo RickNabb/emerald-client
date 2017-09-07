@@ -1,0 +1,10 @@
+{
+  "static": {
+    "/imports": "./imports",
+    "/css": "../css",
+    "/js": "./build",
+    "/fonts": "../fonts",
+    "/img": "../img"
+  },
+  "emptyPackets": ["testPacket1", "testPacket2", "testPacket3"]
+}
