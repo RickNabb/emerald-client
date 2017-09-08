@@ -1,0 +1,20 @@
+{
+  "name": "emerald-client",
+  "version": "1.0.0",
+  "description": "This project is the client portion of a custom JavaScript networking engine built off of WebSockets.",
+  "main": "beryl.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nick Rabb <nick.rabb2@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "express": "^4.15.4",
+    "promise": "^8.0.1",
+    "socket.io": "^2.0.3",
+    "socket.io-client": "^2.0.3"
+  }
+}

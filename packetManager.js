@@ -24,6 +24,10 @@ module.exports = (config, debug, fs, promise, fsExt, objExt) => {
     })
   }
 
+  function send(packetId, data) {
+    packets.out[packetId].send(data)
+  }
+
   /**
    * Create all of the empty packets specified in the Emerald configuration.
    * @return {Object}  A collection of all the packets we create
