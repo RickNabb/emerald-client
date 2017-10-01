@@ -18,7 +18,12 @@ let http = require('http').Server(app)
 /**
  * The socketIO module for handling app communications.
  */
-let io = require('socket.io')(http, {'pingInterval': 15000, 'pingTimeout': 30000})
+let clientIO = require('socket.io-client')
+
+/**
+ * The socket IO module.
+ */
+let io = require('socket.io')
 
 /**
  * The path module for resolving filepaths.
@@ -62,17 +67,38 @@ let objExt = require('./utils/objExt.js')(arrayExt)
 let packetManager
 
 /**
+ * The socket that we'll send data through.
+ */
+let clientSocket
+
+/**
+ * 
+ */
+let serverSocket
+
+/**
+ * The configuration we're going to load for the server proxy.
+ * The user can define custom properties in this.
+ */
+let config
+
+/**
  * init - The initialization method.
  * Modules that load asynchronously are loaded here as well.
  */
 async function init() {
   // Start the server
   debug.log('Beryl Server Started...')
-  const config = await loadConfig()
+  config = await loadConfig()
+    .catch(err => debug.error(err))
   setupStaticImports(config)
 
   packetManager = require('./packetManager.js')(config, debug, fs, promise, fsExt, objExt)
-  debug.log(await packetManager.init())
+  await packetManager.init()
+    .catch(err => debug.error(err))
+
+  clientSocket = await(initSockets()).catch(err => debug.error(err))
+  packetManager.socket = clientSocket
 
   // Also should use some sort of cacheing to make this faster
   app.use('/packetManifest', express.static(path.join(__dirname, '/.packetManifest.json')))
@@ -83,11 +109,40 @@ async function init() {
   //   debug.error(exception, true)
   //   process.exit()
   // })
-  http.listen(config.connection.port, function() {
-    debug.log("Listening on *:" + config.connection.port + "...")
+  http.listen(config.connection.webPort, function() {
+    debug.log("Listening on *:" + config.connection.webPort + "...")
   })
 
   setupRoutes()
+}
+
+function initSockets() {
+  return new Promise((resolve, reject) => {
+    // TODO : Set up SSL
+    initClientSocket()
+    resolve()
+  })
+}
+
+function initClientSocket() {
+  clientSocket = io(http, { 'pingInterval': 15000, pingTimeout: 30000 })
+  clientSocket.on('connect', () => {
+    debug.log('Client connected')
+    initServerProxySocket()
+  })
+  clientSocket.on('disconnect', () => {
+    debug.log('Client disconnected')
+    serverSocket.emit('disconnect')
+  })
+}
+
+function initServerProxySocket() {
+  const address = "http://" + config.connection.hostname + ':' + config.connection.socketPort
+  serverSocket = clientIO(address)
+  debug.log('Connecting to server on port ' + config.connection.socketPort + '...')
+  serverSocket.on('connect', () => {
+    debug.log('Connection to ' + config.connection.hostname + ' at port ' + config.connection.socketPort + ' established')
+  })
 }
 
 async function servePackets() {

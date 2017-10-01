@@ -8,6 +8,7 @@ module.exports = (config, debug, fs, promise, fsExt, objExt) => {
 
   const readline = require('readline')
   const packets = {in: {}, out: {}}
+  let socket
   let emptyPackets
 
   function init() {
@@ -195,6 +196,7 @@ module.exports = (config, debug, fs, promise, fsExt, objExt) => {
     "convertPacketsToJavascript": convertPacketsToJavascript,
     "incomingPacketAsJavascript": incomingPacketAsJavascript,
     "outgoingPacketAsJavascript": outgoingPacketAsJavascript,
-    "init": init
+    "init": init,
+    "socket": socket
   }
 }
